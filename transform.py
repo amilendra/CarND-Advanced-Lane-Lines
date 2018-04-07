@@ -13,16 +13,12 @@ def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     direction = (1, 0)
     if orient == 'y':
         direction = (0, 1)
-    sobel = cv2.Sobel(gray, cv2.CV_64F, direction[0], direction[1])
+    sobel = cv2.Sobel(gray, cv2.CV_64F, direction[0], direction[1], ksize=sobel_kernel)
     abs_sobel = np.absolute(sobel)
     scaled_sobel = np.uint8(255*abs_sobel/np.max(abs_sobel))
 
-    thresh_min = 20
-    thresh_max = 100
     grad_binary = np.zeros_like(scaled_sobel)
-    grad_binary[(scaled_sobel >= thresh[0]) & (scaled_sobel <= thresh[1])] = 1
-    #plt.imshow(sxbinary, cmap='gray')
-
+    grad_binary[(scaled_sobel >= thresh[0]) & (scaled_sobel <= thresh[1])] = 255
 
     return grad_binary
 
@@ -43,8 +39,8 @@ ksize = 3 # Choose a larger odd number to smooth gradient measurements
 image = mpimg.imread('test_images/signs_vehicles_xygrad.png')
 
 # Apply each of the thresholding functions
-gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(0, 255))
-grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(0, 255))
+gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(20, 100))
+grady = abs_sobel_thresh(image, orient='y', sobel_kernel=ksize, thresh=(20, 100))
 #mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(0, 255))
 #dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0, np.pi/2))
 
