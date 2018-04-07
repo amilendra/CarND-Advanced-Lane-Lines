@@ -1,9 +1,5 @@
 import numpy as np
 import cv2
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import pickle
-
 
 def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     # Convert to grayscale
@@ -69,6 +65,8 @@ mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(30, 100))
 dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.3))
 combined = np.zeros_like(dir_binary)
 combined[((gradx == 255) & (grady == 255)) | ((mag_binary == 255) & (dir_binary == 255))] = 255
+
+cv2.imwrite('output_images/test_combined.jpg',combined)
 
 cv2.imshow('Gradient X Binary',gradx)
 cv2.waitKey()
