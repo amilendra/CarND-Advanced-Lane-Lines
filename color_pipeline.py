@@ -45,6 +45,15 @@ margin = 45
 # Set minimum number of pixels found to recenter window
 minpix = 50
 
+# Write some Text
+
+font                   = cv2.FONT_HERSHEY_SIMPLEX
+bottomLeftCornerOfLText = (10,50)
+bottomLeftCornerOfRText = (10,80)
+fontScale              = 1
+fontColor              = (255,255,255)
+lineType               = 2
+
 i = 0
 def process_image(img):
     global i
@@ -168,7 +177,22 @@ def process_image(img):
     newwarp = cv2.warpPerspective(color_warp, Minv, img_size ) 
     # Combine the result with the original image
     result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
-    cv2.imwrite('pipe_images/test%d.jpg' % (i),result)
+
+    cv2.putText(result,'Curvature(Left) : %6.5f' % left_fit[0], 
+    bottomLeftCornerOfLText, 
+    font, 
+    fontScale,
+    fontColor,
+    lineType)
+
+    cv2.putText(result,'Curvature(Right) : %6.5f' % right_fit[0], 
+    bottomLeftCornerOfRText, 
+    font, 
+    fontScale,
+    fontColor,
+    lineType)
+
+    #cv2.imwrite('pipe_images/test%d.jpg' % (i),result)
     i = i + 1
     return result
 
