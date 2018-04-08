@@ -88,8 +88,10 @@ def process_image(img):
     # Find the peak of the left and right halves of the histogram
     # These will be the starting point for the left and right lines
     midpoint = np.int(histogram.shape[0]//2)
-    leftx_base = np.argmax(histogram[:midpoint])
-    rightx_base = np.argmax(histogram[midpoint:]) + midpoint
+    quarterpoint = np.int(histogram.shape[0]//4)
+    octopoint = np.int(histogram.shape[0]//8)
+    leftx_base = np.argmax(histogram[quarterpoint:midpoint]) + quarterpoint
+    rightx_base = np.argmax(histogram[midpoint + octopoint:2*midpoint - octopoint]) + midpoint + octopoint
 
     # Choose the number of sliding windows
     nwindows = 9
