@@ -24,7 +24,7 @@ mtx = dist_pickle["mtx"]
 dist = dist_pickle["dist"]
 
 # Read in an image
-img = cv2.imread('input_images/test612.jpg')
+img = cv2.imread('input_images/test585.jpg')
 #img = cv2.normalize(img, img, alpha=0, beta=1, norm_type=cv2.NORM_MINMAX, dtype=cv2.CV_32F)
 #cv2.imshow("Normalized", img)
 #cv2.waitKey()
@@ -40,18 +40,18 @@ s_channel = hls[:,:,2]
 gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
 
 # Sobel x
-sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0) # Take the derivative in x
+sobelx = cv2.Sobel(s_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
 abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
 scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
 
 # Threshold x gradient
-thresh_min = 20
-thresh_max = 100
+thresh_min = 30
+thresh_max = 120
 sxbinary = np.zeros_like(scaled_sobel)
 sxbinary[(scaled_sobel >= thresh_min) & (scaled_sobel <= thresh_max)] = 1
 
 # Threshold color channel
-s_thresh_min = 170
+s_thresh_min = 180
 s_thresh_max = 255
 s_binary = np.zeros_like(s_channel)
 s_binary[(s_channel >= s_thresh_min) & (s_channel <= s_thresh_max)] = 1
@@ -67,9 +67,9 @@ combined[(s_binary == 1) | (sxbinary == 1)] = 255
 img_size = (img.shape[1], img.shape[0])
 src = np.float32(
     [[(img_size[0] / 2) - 75, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 30), img_size[1]],
-    [(img_size[0] * 5 / 6) + 70, img_size[1]],
-    [(img_size[0] / 2 + 75), img_size[1] / 2 + 100]])
+    [((img_size[0] / 6) - 30), img_size[1] - 50],
+    [(img_size[0] * 5 / 6) + 70, img_size[1] - 50 ],
+    [(img_size[0] / 2 + 70), img_size[1] / 2 + 100]])
 
 print(src)
 
@@ -120,6 +120,7 @@ quarterpoint = np.int(histogram.shape[0]//4)
 octopoint = np.int(histogram.shape[0]//8)
 leftx_base = np.argmax(histogram[quarterpoint:midpoint]) + quarterpoint
 rightx_base = np.argmax(histogram[midpoint + octopoint:2*midpoint - octopoint]) + midpoint + octopoint
+#rightx_base = np.argmax(histogram[midpoint + quarterpoint:]) + midpoint + quarterpoint
 
 # Choose the number of sliding windows
 nwindows = 9
@@ -133,7 +134,7 @@ nonzerox = np.array(nonzero[1])
 leftx_current = leftx_base
 rightx_current = rightx_base
 # Set the width of the windows +/- margin
-margin = 100
+margin = 45
 # Set minimum number of pixels found to recenter window
 minpix = 50
 # Create empty lists to receive left and right lane pixel indices

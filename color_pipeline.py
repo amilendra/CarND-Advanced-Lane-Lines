@@ -5,13 +5,7 @@ from moviepy.editor import VideoFileClip
 
 
 def cal_undistort(img, mtx, dist):
-    # Use cv2.calibrateCamera() and cv2.undistort()  
     undist = cv2.undistort(img, mtx, dist, None, mtx)
-    
-    # crop the image
-    #x,y,w,h = roi
-    #undist = undist[y:y+h, x:x+w]
-    #undist = np.copy(img)  # Delete this line
     return undist
 
 # Read in the saved camera matrix and distortion coefficients
@@ -21,66 +15,64 @@ mtx = dist_pickle["mtx"]
 dist = dist_pickle["dist"]
 # Choose a Sobel kernel size
 ksize = 3 # Choose a larger odd number to smooth gradient measurements
+img_size = (1280, 720)
+
+src = np.float32(
+    [[(img_size[0] / 2) - 70, img_size[1] / 2 + 100],
+    [((img_size[0] / 6) - 30), img_size[1] - 50],
+    [(img_size[0] * 5 / 6) + 70, img_size[1] - 50 ],
+    [(img_size[0] / 2 + 70), img_size[1] / 2 + 100]])
+
+dst = np.float32(
+    [[(img_size[0] / 4), 0],
+    [(img_size[0] / 4), img_size[1]],
+    [(img_size[0] * 3 / 4), img_size[1]],
+    [(img_size[0] * 3 / 4), 0]])
+
+M = cv2.getPerspectiveTransform(src, dst)
+Minv = cv2.getPerspectiveTransform(dst, src)
+
+# Threshold x gradient
+thresh_min = 35
+thresh_max = 120
+
+# Threshold color channel
+s_thresh_min = 180
+s_thresh_max = 255
+
+# Set the width of the windows +/- margin
+margin = 45
+# Set minimum number of pixels found to recenter window
+minpix = 50
 
 i = 0
 def process_image(img):
     global i
-    cv2.imwrite('input_images/test%d.jpg' % (i),img)
+    #cv2.imwrite('input_images/test%d.jpg' % (i),img)
 
     # Convert to HLS color space and separate the S channel
     # Note: img is the undistorted image
     hls = cv2.cvtColor(img, cv2.COLOR_RGB2HLS)
+    l_channel = hls[:,:,1]
     s_channel = hls[:,:,2]
 
-    # Grayscale image
-    # NOTE: we already saw that standard grayscaling lost color information for the lane lines
-    # Explore gradients in other colors spaces / color channels to see what might work better
-    gray = cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
-
     # Sobel x
-    sobelx = cv2.Sobel(gray, cv2.CV_64F, 1, 0) # Take the derivative in x
+    sobelx = cv2.Sobel(l_channel, cv2.CV_64F, 1, 0) # Take the derivative in x
     abs_sobelx = np.absolute(sobelx) # Absolute x derivative to accentuate lines away from horizontal
     scaled_sobel = np.uint8(255*abs_sobelx/np.max(abs_sobelx))
 
-    # Threshold x gradient
-    thresh_min = 20
-    thresh_max = 100
     sxbinary = np.zeros_like(scaled_sobel)
     sxbinary[(scaled_sobel >= thresh_min) & (scaled_sobel <= thresh_max)] = 1
 
-    # Threshold color channel
-    s_thresh_min = 170
-    s_thresh_max = 255
     s_binary = np.zeros_like(s_channel)
     s_binary[(s_channel >= s_thresh_min) & (s_channel <= s_thresh_max)] = 1
-
-    # Stack each channel to view their individual contributions in green and blue respectively
-    # This returns a stack of the two binary images, whose components you can see as different colors
-    color_binary = np.dstack(( np.zeros_like(sxbinary), sxbinary, s_binary)) * 255
 
     # Combine the two binary thresholds
     combined = np.zeros_like(sxbinary)
     combined[(s_binary == 1) | (sxbinary == 1)] = 1
 
-    img_size = (img.shape[1], img.shape[0])
-    src = np.float32(
-        [[(img_size[0] / 2) - 75, img_size[1] / 2 + 100],
-        [((img_size[0] / 6) - 30), img_size[1]],
-        [(img_size[0] * 5 / 6) + 70, img_size[1]],
-        [(img_size[0] / 2 + 75), img_size[1] / 2 + 100]])
-
-    dst = np.float32(
-        [[(img_size[0] / 4), 0],
-        [(img_size[0] / 4), img_size[1]],
-        [(img_size[0] * 3 / 4), img_size[1]],
-        [(img_size[0] * 3 / 4), 0]])
-
     undistorted = cal_undistort(combined, mtx, dist)
-
-    M = cv2.getPerspectiveTransform(src, dst)
     warped = cv2.warpPerspective(undistorted, M, img_size, flags=cv2.INTER_LINEAR)
-
-    img_size = (warped.shape[1], warped.shape[0])
 
     histogram = np.sum(warped[warped.shape[0]//2:,:], axis=0)
     # Create an output image to draw on and  visualize the result
@@ -104,10 +96,6 @@ def process_image(img):
     # Current positions to be updated for each window
     leftx_current = leftx_base
     rightx_current = rightx_base
-    # Set the width of the windows +/- margin
-    margin = 100
-    # Set minimum number of pixels found to recenter window
-    minpix = 50
     # Create empty lists to receive left and right lane pixel indices
     left_lane_inds = []
     right_lane_inds = []
@@ -162,12 +150,6 @@ def process_image(img):
     out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
     out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
 
-    left = np.array((left_fitx,ploty)).T
-    right = np.array((right_fitx,ploty)).T
-    cv2.polylines(out_img,np.int32([left]),False,(0,255,255),2,cv2.LINE_AA)
-    cv2.polylines(out_img,np.int32([right]),False,(0,255,255),2,cv2.LINE_AA)
-
-    Minv = cv2.getPerspectiveTransform(dst, src)
     unwarped = cv2.warpPerspective(out_img, Minv, img_size, flags=cv2.INTER_LINEAR)
 
     # Create an image to draw the lines on
@@ -183,7 +165,7 @@ def process_image(img):
     cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
 
     # Warp the blank back to original image space using inverse perspective matrix (Minv)
-    newwarp = cv2.warpPerspective(color_warp, Minv, (img.shape[1], img.shape[0])) 
+    newwarp = cv2.warpPerspective(color_warp, Minv, img_size ) 
     # Combine the result with the original image
     result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
     cv2.imwrite('pipe_images/test%d.jpg' % (i),result)
