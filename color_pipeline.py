@@ -47,14 +47,17 @@ minpix = 50
 
 # Write some Text
 
-font                   = cv2.FONT_HERSHEY_SIMPLEX
+font                    = cv2.FONT_HERSHEY_SIMPLEX
 bottomLeftCornerOfLText = (10,50)
 bottomLeftCornerOfRText = (10,80)
-fontScale              = 1
-fontColor              = (255,255,255)
-lineType               = 2
+fontScale               = 1
+fontColor               = (255,255,255)
+lineType                = 2
 
 i = 0
+RESULT_CACHE_SIZE = 5
+left_cache = []
+right_cache = []
 def process_image(img):
     global i
     #cv2.imwrite('input_images/test%d.jpg' % (i),img)
@@ -150,6 +153,18 @@ def process_image(img):
     # Fit a second order polynomial to each
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
+
+    left_cache.append(left_fit)
+    right_cache.append(right_fit)
+    subset = left_cache[-RESULT_CACHE_SIZE:]
+    left_fit[0] = np.sum( x[0] for x in subset ) / len(subset)
+    left_fit[1] = np.sum( x[1] for x in subset ) / len(subset)
+    left_fit[2] = np.sum( x[2] for x in subset ) / len(subset)
+
+    subset = right_cache[-RESULT_CACHE_SIZE:]
+    right_fit[0] = np.sum( x[0] for x in subset ) / len(subset)
+    right_fit[1] = np.sum( x[1] for x in subset ) / len(subset)
+    right_fit[2] = np.sum( x[2] for x in subset ) / len(subset)
 
     # Generate x and y values for plotting
     ploty = np.linspace(0, warped.shape[0]-1, warped.shape[0] )
