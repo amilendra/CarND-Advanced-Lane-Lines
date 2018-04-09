@@ -48,8 +48,8 @@ minpix = 50
 # Write some Text
 
 font                    = cv2.FONT_HERSHEY_SIMPLEX
-bottomLeftCornerOfLText = (10,50)
-bottomLeftCornerOfRText = (10,80)
+bottomLeftCornerOfLine1 = (10,50)
+bottomLeftCornerOfLine2 = (10,80)
 fontScale               = 1
 fontColor               = (255,255,255)
 lineType                = 2
@@ -58,6 +58,8 @@ i = 0
 RESULT_CACHE_SIZE = 5
 left_cache = []
 right_cache = []
+left_cr_cache = []
+right_cr_cache = []
 def process_image(img):
     global i
     #cv2.imwrite('input_images/test%d.jpg' % (i),img)
@@ -193,15 +195,55 @@ def process_image(img):
     # Combine the result with the original image
     result = cv2.addWeighted(img, 1, newwarp, 0.3, 0)
 
-    cv2.putText(result,'Curvature(Left) : %6.5f' % left_fit[0], 
-    bottomLeftCornerOfLText, 
+    # Define y-value where we want radius of curvature
+    # I'll choose the maximum y-value, corresponding to the bottom of the image
+    y_eval = np.max(ploty)
+    left_curverad = ((1 + (2*left_fit[0]*y_eval + left_fit[1])**2)**1.5) / np.absolute(2*left_fit[0])
+    right_curverad = ((1 + (2*right_fit[0]*y_eval + right_fit[1])**2)**1.5) / np.absolute(2*right_fit[0])
+    #print(left_curverad, right_curverad)
+
+    # Define conversions in x and y from pixels space to meters
+    ym_per_pix = 30/720 # meters per pixel in y dimension
+    xm_per_pix = 3.7/700 # meters per pixel in x dimension
+
+    # Fit new polynomials to x,y in world space
+    left_fit_cr = np.polyfit(lefty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(righty*ym_per_pix, rightx*xm_per_pix, 2)
+
+    left_cr_cache.append(left_fit_cr)
+    right_cr_cache.append(right_fit_cr)
+    subset = left_cr_cache[-RESULT_CACHE_SIZE:]
+    left_fit_cr[0] = np.sum( x[0] for x in subset ) / len(subset)
+    left_fit_cr[1] = np.sum( x[1] for x in subset ) / len(subset)
+    left_fit_cr[2] = np.sum( x[2] for x in subset ) / len(subset)
+
+    subset = right_cr_cache[-RESULT_CACHE_SIZE:]
+    right_fit_cr[0] = np.sum( x[0] for x in subset ) / len(subset)
+    right_fit_cr[1] = np.sum( x[1] for x in subset ) / len(subset)
+    right_fit_cr[2] = np.sum( x[2] for x in subset ) / len(subset)
+
+    # Calculate the new radii of curvature
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    curve_rad = (left_curverad + right_curverad) / 2
+    # Now our radius of curvature is in meters
+    #print(left_curverad, 'm', right_curverad, 'm')
+
+    img_center_position = img_size[0]/2
+    l_fit_x_int = left_fit[0]*y_eval**2 + left_fit[1]*y_eval + left_fit[2]
+    r_fit_x_int = right_fit[0]*y_eval**2 + right_fit[1]*y_eval + right_fit[2]
+    lane_center_position = (l_fit_x_int + r_fit_x_int) /2
+    center_dist = (lane_center_position - img_center_position) * xm_per_pix
+
+    cv2.putText(result,'Radius of Curvature = %6.1f(m)' % curve_rad,
+    bottomLeftCornerOfLine1,
     font, 
     fontScale,
     fontColor,
     lineType)
 
-    cv2.putText(result,'Curvature(Right) : %6.5f' % right_fit[0], 
-    bottomLeftCornerOfRText, 
+    cv2.putText(result,'Vehicle is %6.2fm left of Center' % center_dist,
+    bottomLeftCornerOfLine2,
     font, 
     fontScale,
     fontColor,
@@ -212,7 +254,7 @@ def process_image(img):
     return result
 
     
-white_output = 'video.mp4'
+white_output = 'project_video_output.mp4'
 clip1 = VideoFileClip("project_video.mp4")
 white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
 white_clip.write_videofile(white_output, audio=False)
