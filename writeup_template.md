@@ -25,7 +25,7 @@ The goals / steps of this project are the following:
 [image3_input]: ./test_images/signs_vehicles_xygrad.png "Test Image for Binary Thresholding"
 [image3]: ./output_images/bin_thresh_signs_vehicles_xygrad.jpg  "Binary Thresholding Example"
 [image4_undistorted]: ./output_images/straight_lines1_with_trapezoid.jpg "Undistorted image with src points drawn"
-[image4_warped]: ./output_images/straight_lines1_warped_trapezoid "Warped results with dst points drawn"
+[image4_warped]: ./output_images/straight_lines1_warped_trapezoid.jpg "Warped results with dst points drawn"
 [image5]: ./examples/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
