@@ -245,7 +245,7 @@ def process_image(img):
     lineType)
 
     #cv2.imwrite('pipe_images/test%d.jpg' % (i),result)
-    i = i + 1
+    #i = i + 1
     return result
 
 img = cv2.imread('test_images/test3.jpg')
