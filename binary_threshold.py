@@ -1,6 +1,5 @@
 import numpy as np
 import cv2
-import pickle
 
 def abs_sobel_thresh(img, orient='x', sobel_kernel=3, thresh=(0, 255)):
     # Convert to grayscale
