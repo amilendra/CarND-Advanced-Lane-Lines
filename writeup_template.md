@@ -26,7 +26,7 @@ The goals / steps of this project are the following:
 [image3]: ./output_images/bin_thresh_signs_vehicles_xygrad.jpg  "Binary Thresholding Example"
 [image4_undistorted]: ./output_images/straight_lines1_with_trapezoid.jpg "Undistorted image with src points drawn"
 [image4_warped]: ./output_images/straight_lines1_warped_trapezoid.jpg "Warped results with dst points drawn"
-[image5]: ./examples/color_fit_lines.jpg "Fit Visual"
+[image5]: ./output_images/color_fit_lines.jpg "Fit Visual"
 [image6]: ./examples/example_output.jpg "Output"
 [video1]: ./project_video.mp4 "Video"
 
@@ -124,8 +124,16 @@ I verified that my perspective transform was working as expected by drawing the 
 
 
 #### 4. Describe how (and identify where in your code) you identified lane-line pixels and fit their positions with a polynomial?
+See the function `process_image()` in `color_fit_lines.py` for my implementation.
+Most of the code is based on the lecture videos and quizes, but made the following small changes.
 
-Then I did some other stuff and fit my lane lines with a 2nd order polynomial kinda like this:
+Because grayscale images can be prone to loss of information due to illumination changes,
+I converted the image to hls and used the l and s channels for processing.(lines 48 to 50 in `color_fit_lines.py`)
+I tuned the search for lanes using the following heuristic(lines 75 to 79 in `color_fit_lines.py`):
+* left lane is searched between the first quarter to the midpoint of the image
+* the right lane is searched between 5/8 and 7/8 of the image.
+
+I could fit the lanes into a 2nd order polynomial like this.
 
 ![alt text][image5]
 
