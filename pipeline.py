@@ -248,6 +248,9 @@ def process_image(img):
     i = i + 1
     return result
 
+img = cv2.imread('test_images/test3.jpg')
+curved = process_image(img)
+cv2.imwrite("output_images/with_radius_test3.jpg", curved)
     
 white_output = 'project_video_output.mp4'
 clip1 = VideoFileClip("project_video.mp4")
