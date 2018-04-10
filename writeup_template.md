@@ -139,7 +139,14 @@ I could fit the lanes into a 2nd order polynomial like this.
 
 #### 5. Describe how (and identify where in your code) you calculated the radius of curvature of the lane and the position of the vehicle with respect to center.
 
-I did this in lines # through # in my code in `my_other_file.py`
+Again I used the example code from the lessons. After fitting the lanes to 2nd order polynomials, I get two equations in the form of `f(y) = A*x^2 + B*x + C`
+
+The radius of the curve at a particular y position was calculated by the equation,
+```text
+radius = ((1 + (2*A*y + B)^2)^1.5) / abs(2*A)
+```
+
+I did this in lines 196 through 197 in my code in `pipeline.py`
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
