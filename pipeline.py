@@ -53,14 +53,14 @@ fontScale               = 1
 fontColor               = (255,255,255)
 lineType                = 2
 
-i = 0
+#i = 0
 RESULT_CACHE_SIZE = 5
 left_cache = []
 right_cache = []
 left_cr_cache = []
 right_cr_cache = []
 def process_image(img):
-    global i
+    #global i
     #cv2.imwrite('input_images/test%d.jpg' % (i),img)
 
     # Convert to HLS color space and separate the S channel
