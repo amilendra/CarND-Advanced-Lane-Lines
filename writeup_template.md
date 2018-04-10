@@ -27,8 +27,8 @@ The goals / steps of this project are the following:
 [image4_undistorted]: ./output_images/straight_lines1_with_trapezoid.jpg "Undistorted image with src points drawn"
 [image4_warped]: ./output_images/straight_lines1_warped_trapezoid.jpg "Warped results with dst points drawn"
 [image5]: ./output_images/color_fit_lines.jpg "Fit Visual"
-[image6]: ./examples/example_output.jpg "Output"
-[video1]: ./project_video.mp4 "Video"
+[image6]: ./output_images/with_radius_test3.jpg "Output"
+[video1]: ./project_video_output.mp4 "Video"
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/571/view) Points
 
@@ -150,7 +150,7 @@ I did this in lines 196 through 197 in my code in `pipeline.py`
 
 #### 6. Provide an example image of your result plotted back down onto the road such that the lane area is identified clearly.
 
-I implemented this step in lines # through # in my code in `yet_another_file.py` in the function `map_lane()`.  Here is an example of my result on a test image:
+I implemented this step in lines 171 through 191 in my code in `pipeline.py` in the function `process_image()`.  Here is an example of my result on a test image:
 
 ![alt text][image6]
 
@@ -158,9 +158,7 @@ I implemented this step in lines # through # in my code in `yet_another_file.py`
 
 ### Pipeline (video)
 
-#### 1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (wobbly lines are ok but no catastrophic failures that would cause the car to drive off the road!).
-
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_output.mp4)
 
 ---
 
@@ -169,3 +167,17 @@ Here's a [link to my video result](./project_video.mp4)
 #### 1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
 Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+
+I first took down all the example code from the lessons and tested them on the test images provided. With some small modifications I could make them work.
+I then created the pipeline and passed the video through it. While it worked reasonably well, the parts with more illumination and shadows confused it and mistook the wall on the left or the middle of the road as the lanes. To fix this, I restricted the margins a bit more than provided in the examples.
+
+* left lane is searched between the first quarter to the midpoint of the image
+* the right lane is searched between 5/8 and 7/8 of the image.
+
+This and also using the l-channel rather than just grayscaling the image fixed it considerably.
+
+But, there were one or two places where the lanes spiked a bit towards the left or the right, and no amount of tuning the margins or search areas could fix this.
+So I used a simple smoothing function to use the average a reading with 9 previous readings(average over 10 readings). This gave me a good smooth output video.
+While this smoothing step works for the project video where the turns are more or less straight and smooth, I think it should fail for more sudden turns.
+
+Also my approach is inefficient at the moment because I am doing the window search for each image, when I could use the previous results to get a better search area for the lanes. Using previous results would probably work better for videos with sudden turns too. But I am a bit pressed for time to finish the course in a weeks time, so I will try these improvements later.
