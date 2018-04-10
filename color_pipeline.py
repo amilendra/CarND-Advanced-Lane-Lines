@@ -13,14 +13,13 @@ def cal_undistort(img, mtx, dist):
 dist_pickle = pickle.load( open( "output_images/wide_dist_pickle.p", "rb" ) )
 mtx = dist_pickle["mtx"]
 dist = dist_pickle["dist"]
-# Choose a Sobel kernel size
-ksize = 3 # Choose a larger odd number to smooth gradient measurements
+
 img_size = (1280, 720)
 
 src = np.float32(
     [[(img_size[0] / 2) - 70, img_size[1] / 2 + 100],
-    [((img_size[0] / 6) - 30), img_size[1] - 50],
-    [(img_size[0] * 5 / 6) + 70, img_size[1] - 50 ],
+    [((img_size[0] / 6) - 30), img_size[1]],
+    [(img_size[0] * 5 / 6) + 70, img_size[1]],
     [(img_size[0] / 2 + 70), img_size[1] / 2 + 100]])
 
 dst = np.float32(
@@ -123,11 +122,7 @@ def process_image(img):
         win_xleft_high = leftx_current + margin
         win_xright_low = rightx_current - margin
         win_xright_high = rightx_current + margin
-        # Draw the windows on the visualization image
-        cv2.rectangle(out_img,(win_xleft_low,win_y_low),(win_xleft_high,win_y_high),
-        (0,255,0), 2) 
-        cv2.rectangle(out_img,(win_xright_low,win_y_low),(win_xright_high,win_y_high),
-        (0,255,0), 2) 
+
         # Identify the nonzero pixels in x and y within the window
         good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & 
         (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
