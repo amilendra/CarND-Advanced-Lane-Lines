@@ -1,8 +1,8 @@
-import numpy as np
-import cv2
 import os
 import glob
 import pickle
+import cv2
+import numpy as np
 
 CHESSBOARD_X_SQUARES = 9
 CHESSBOARD_Y_SQUARES = 6
@@ -39,28 +39,29 @@ for idx, fname in enumerate(images):
 
 
 # Test undistortion on an image
-img = cv2.imread('camera_cal/calibration1.jpg')
-gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-img_size = (img.shape[1], img.shape[0])
+for idx, fname in enumerate(images):
+    img = cv2.imread(fname)
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    img_size = (img.shape[1], img.shape[0])
 
-cv2.imshow('Original Image', img)
-cv2.waitKey()
-cv2.imwrite('output_images/test_dist.jpg',img)
+    #cv2.imshow('Original Image', img)
+    #cv2.waitKey()
+    write_name = 'output_images/undistorted_' + os.path.basename(fname)
+    #cv2.imwrite('output_images/test_dist.jpg',img)
 
-# Do camera calibration given object points and image points
-ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size,None,None)
+    # Do camera calibration given object points and image points
+    ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, img_size, None, None)
 
-dst = cv2.undistort(img, mtx, dist, None, mtx)
-cv2.imwrite('output_images/test_undist.jpg',dst)
+    dst = cv2.undistort(img, mtx, dist, None, mtx)
+    cv2.imwrite(write_name, dst)
+    # Visualize undistortion
+    cv2.imshow('Undistorted Image' + write_name, dst)
+    cv2.waitKey()
 
 # Save the camera calibration result for later use (we won't worry about rvecs / tvecs)
 dist_pickle = {}
 dist_pickle["mtx"] = mtx
 dist_pickle["dist"] = dist
 pickle.dump( dist_pickle, open( "output_images/wide_dist_pickle.p", "wb" ) )
-
-# Visualize undistortion
-cv2.imshow('Undistorted Image', dst)
-cv2.waitKey()
 
 cv2.destroyAllWindows()
