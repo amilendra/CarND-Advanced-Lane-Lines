@@ -65,6 +65,7 @@ I then used the output `objpoints` and `imgpoints` to compute the camera calibra
 To demonstrate this step, I will describe how I apply the distortion correction to one of the test images like this one:
 ![alt text][image2]
 
+Code for this is in `undistort.py`.
 It uses the camera calibration and distortion coefficients found before, and the test image is undistorted using the cv2.undistort function. Here is the undistorted image:
 
 ![alt text][image2_undistort]
